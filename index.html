@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>API REST</title>
+  <style>
+    li { margin-bottom: 5px; }
+    button { margin-left: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Parcial UMG DESARROLLO WEB - Gestión alumnos</h1>
+
+  <form id="alumnoForm">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="number" id="edad" placeholder="Edad" required>
+    <input type="number" id="idUpdate" placeholder="ID para actualizar" style="display:none;">
+    <button type="submit">Agregar</button>
+  </form>
+
+  <ul id="alumnoLista"></ul>
+
+  <h1>Parcial UMG DESARROLLO WEB - Gestión Cursos</h1>
+
+  <form id="cursoForm">
+    <input type="text" id="nombreCurso" placeholder="Nombre del Curso" required>
+    <input type="number" id="duracionCurso" placeholder="Duración (horas)" required>
+    <input type="number" id="idUpdateCurso" placeholder="ID para actualizar" style="display:none;">
+    <button type="submit">Agregar</button>
+  </form>
+
+  <ul id="cursoLista"></ul>
+
+  <script>
+    const API = "http://localhost:3000/alumno";
+
+    async function cargarAlumnos() {
+      try {
+        const res = await fetch(API);
+        const data = await res.json();
+        const lista = document.getElementById("alumnoLista");
+        lista.innerHTML = "";
+        data.forEach(a => {
+          const li = document.createElement("li");
+          li.textContent = `ID ${a.id}: ${a.nombre} (${a.edad} años)`;
+
+          // Botón para eliminar
+          const btnDelete = document.createElement("button");
+          btnDelete.textContent = "Eliminar";
+          btnDelete.onclick = async () => {
+            await fetch(`${API}/${a.id}`, { method: "DELETE" });
+            cargarAlumnos();
+          };
+          li.appendChild(btnDelete);
+
+          // Botón para editar
+          const btnEdit = document.createElement("button");
+          btnEdit.textContent = "Editar";
+          btnEdit.onclick = () => {
+            document.getElementById("nombre").value = a.nombre;
+            document.getElementById("edad").value = a.edad;
+            document.getElementById("idUpdate").value = a.id;
+          };
+          li.appendChild(btnEdit);
+
+          // Botón para ver detalles
+          const btnDetalle = document.createElement("button");
+          btnDetalle.textContent = "Detalles";
+          btnDetalle.onclick = async () => {
+            const res = await fetch(`${API}/${a.id}`);
+            const detalle = await res.json();
+            alert(`ID: ${detalle.id}\nNombre: ${detalle.nombre}\nEdad: ${detalle.edad}`);
+          };
+          li.appendChild(btnDetalle);
+
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Error cargando alumnos:", err);
+      }
+    }
+
+    document.getElementById("alumnoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById("nombre").value;
+      const edad = parseInt(document.getElementById("edad").value);
+      const idUpdate = document.getElementById("idUpdate").value;
+
+      if (idUpdate) {
+        // PUT -> actualizar
+        await fetch(`${API}/${idUpdate}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombre, edad })
+        });
+        document.getElementById("idUpdate").value = "";
+      } else {
+        // POST -> crear
+        await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombre, edad })
+        });
+      }
+
+      e.target.reset();
+      cargarAlumnos();
+    });
+
+    cargarAlumnos();
+  </script>
+  <script>
+    const API_CURSOS = "http://localhost:3000/curso";
+
+    async function cargarCursos() {
+      try {
+        const res = await fetch(API);
+        const data = await res.json();
+        const lista = document.getElementById("cursoLista");
+        lista.innerHTML = "";
+        data.forEach(c => {
+          const li = document.createElement("li");
+          li.textContent = `ID ${c.id}: ${c.nombreCurso} (${c.duracionCurso} horas)`;
+
+          // Botón para eliminar
+          const btnDelete = document.createElement("button");
+          btnDelete.textContent = "Eliminar";
+          btnDelete.onclick = async () => {
+            await fetch(`${API}/${c.id}`, { method: "DELETE" });
+            cargarCursos();
+          };
+          li.appendChild(btnDelete);
+
+          // Botón para editar
+          const btnEdit = document.createElement("button");
+          btnEdit.textContent = "Editar";
+          btnEdit.onclick = () => {
+            document.getElementById("nombreCurso").value = c.nombreCurso;
+            document.getElementById("duracionCurso").value = c.duracionCurso;
+            document.getElementById("idUpdateCurso").value = c.id;
+          };
+          li.appendChild(btnEdit);
+
+          // Botón para ver detalles
+          const btnDetalle = document.createElement("button");
+          btnDetalle.textContent = "Detalles";
+          btnDetalle.onclick = async () => {
+            const res = await fetch(`${API}/${c.id}`);
+            const detalle = await res.json();
+            alert(`ID: ${detalle.id}\nNombre: ${detalle.nombreCurso}\nDuración: ${detalle.duracionCurso} horas`);
+          };
+          li.appendChild(btnDetalle);
+
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Error cargando cursos:", err);
+      }
+    }
+
+    document.getElementById("cursoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nombreCurso = document.getElementById("nombreCurso").value;
+      const duracionCurso = parseInt(document.getElementById("duracionCurso").value);
+      const idUpdateCurso = document.getElementById("idUpdateCurso").value;
+
+      if (idUpdateCurso) {
+        // PUT -> actualizar
+        await fetch(`${API}/${idUpdateCurso}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombreCurso, duracionCurso })
+        });
+        document.getElementById("idUpdateCurso").value = "";
+      } else {
+        // POST -> crear
+        await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombreCurso, duracionCurso })
+        });
+      }
+
+      e.target.reset();
+      cargarCursos();
+    });
+
+    cargarCursos();
+  </script>   
+  </script>
+</body>
+</html>

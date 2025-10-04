@@ -1,0 +1,2 @@
+Backend NestJS npm run start:dev
+Frontend Index.html
